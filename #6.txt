@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive Art</title>
+</head>
+<body>
+    てすと
+  <canvas id="mycanvas" width="500" height="250">
+    Canvasに対応したブラウザを使ってください。
+  </canvas>
+
+
+
+  
+
+  <script>
+   (function() {
+     'use strict';
+
+      var canvas;
+      var ctx;  //描画するための変数
+      var Ball;
+      var balls = []; //ボールを複数にする
+
+      canvas = document.getElementById('mycanvas');
+      if (!canvas || !canvas.getContext) return false　//canvasが取得できなかった時の処理
+      ctx = canvas.getContext('2d'); 
+
+      // rand → 最大値と最小値を指定して、その間の乱数を返す
+      function rand(min, max) {
+        // 0-n
+        // Math.floor(Math.random() * (n + 1))
+        // min-max
+        //(例)↓0以上10未満の数値の中から1つ数値を選ぶパターン
+        // var num = Math.floor(Math.random() * 10);
+        return min + Math.floor(Math.random() * (max - min + 1));
+      }
+
+//ボールをクリックする度に増やす
+      canvas.addEventListener('click', function() {
+        var x, y, r;
+        x = rand(100, 400);
+        y = rand(100, 200);
+        //20%くらいの確率で大きな円が出現
+        r = rand(0, 100) < 20 ? rand(50, 80) : rand(10, 35);
+        //balls配列に新しいballを追加
+        balls.push(new Ball(x, y, r));
+      });
+
+      Ball = function(x, y, r) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.vx = rand(-10, 10); //x方向の加速度
+        this.vy = rand(-10, 10); //y方向の加速度
+        // hslaは、hue（色相(0〜360/rgb)）、saturation（彩度）、lightness（明度）、alpha（透明度）の略。
+        // this.color = 'hsla(30, 80%, 40%, 0.8)'; 
+        this.color = 'hsla(' + rand(50, 100) + ', ' + rand(40, 80) + '%, ' + rand(50, 60) + '%, ' + Math.random() + ')';
+        this.draw = function() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+          ctx.fillStyle = this.color;　//塗りつぶしの色
+          ctx.closePath(); //線を閉じる
+          ctx.fill();  //塗りつぶし
+        };
+        this.move = function() {
+//ボールが跳ね返るようにする(半径を考慮)
+          if (this.x + this.r > canvas.width || this.x - this.r < 0) {
+            this.vx *= -1;
+          }
+          if (this.y + this.r > canvas.height || this.y - this.r < 0) {
+            this.vy *= -1;
+          }
+          //加速度
+          this.x += this.vx;
+          this.y += this.vy;
+        }
+      };
+
+      //balls を作成したので不要になった
+      // var ball = new Ball(rand(100, 200), rand(100, 200), rand(10, 50));
+      // ball.draw();
+
+//実行
+      function update() {
+        var i;
+        ctx.fillStyle = '#ecf0f1'; //前回のが残ってるので上書き
+        ctx.fillRect(0, 0, canvas.width, canvas.height); //全体を塗りつぶし
+        //ballsの描画(ループを回す)
+        for (i = 0; i < balls.length; i++) {
+          balls[i].draw();
+          balls[i].move();
+
+          // ballsを設定する前の処理
+          // ball.draw();
+          // ball.move();
+        }
+//setTimeout(処理内容,実行タイミング)
+        setTimeout(function() { //処理を繰り返す
+          update();
+        }, 30); //30mm秒ごとに呼び出し 0.03秒?     
+      }
+
+  update();
+
+   })();
+  </script>
+</body>
+</html>
